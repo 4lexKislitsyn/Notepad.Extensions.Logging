@@ -31,8 +31,9 @@ namespace Notepad.Extensions.Logging
         readonly IWindowFinder windowFinder;
         readonly IDisposable optionsReloadToken;
         NotepadLoggerOptions options;
+        string searchingWindowName;
         
-        public ILogger CreateLogger(string categoryName) => new NotepadLogger(stringBuilderPool, windowFinder, categoryName, options.WindowName);
+        public ILogger CreateLogger(string categoryName) => new NotepadLogger(stringBuilderPool, windowFinder, categoryName, searchingWindowName);
 
         public void Dispose()
         {
@@ -42,6 +43,22 @@ namespace Notepad.Extensions.Logging
         void ReloadLoggerOptions(NotepadLoggerOptions options)
         {
             this.options = options;
+            if (!string.IsNullOrWhiteSpace(options.WindowName))
+            {
+                searchingWindowName = options.WindowName;
+            }
+            else if (!string.IsNullOrWhiteSpace(options.DocumentName))
+            {
+                switch (options.Application)
+                {
+                    case WindowKind.NotepadPlusPlus:
+                        searchingWindowName = $"{options.DocumentName} - Notepad++";
+                        break;
+                    case WindowKind.Notepad:
+                        searchingWindowName = $"{options.DocumentName} - Notepad";
+                        break;
+                }
+            }
         }
     }
 }
